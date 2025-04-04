@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Container, Typography, Card, CardContent, Grid, ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { getEvents } from './api';
+import { getEvents } from './api'; // Импорт только ОДИН раз
+import ThreatMap from './components/ThreatMap';
 
 // Создаем темную тему
 const darkTheme = createTheme({
@@ -41,16 +42,31 @@ const columns = [
   }
 ];
 
+// Функция геокодирования IP (объединенная версия)
+const geocodeIP = (ip) => ({
+  lat: 50 + Math.random() * 10 - 5,
+  lng: 30 + Math.random() * 20 - 10
+});
+
 // Главный компонент приложения
 export default function App() {
   const [events, setEvents] = useState([]);
+  const [threats, setThreats] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await getEvents();
-        setEvents(response.data || []);
+        const data = response.data || [];
+        
+        setEvents(data);
+        
+        const threatsWithCoords = data.map(event => ({
+          ...event,
+          ...geocodeIP(event.source_ip)
+        }));
+        setThreats(threatsWithCoords);
       } catch (error) {
         console.error('Ошибка загрузки данных:', error);
       } finally {
@@ -59,7 +75,7 @@ export default function App() {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 5000); // Обновление каждые 5 сек
+    const interval = setInterval(fetchData, 5000);
 
     return () => clearInterval(interval);
   }, []);
@@ -68,7 +84,6 @@ export default function App() {
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        {/* Заголовок */}
         <Typography variant="h3" component="h1" gutterBottom align="center" sx={{ mb: 4 }}>
           Мониторинг угроз безопасности
         </Typography>
@@ -86,8 +101,11 @@ export default function App() {
           {/* Добавьте другие карточки по аналогии */}
         </Grid>
 
+        {/* Карта угроз */}
+        <ThreatMap threats={threats} loading={loading} />
+
         {/* Таблица событий */}
-        <div style={{ height: 600, width: '100%' }}>
+        <div style={{ height: 600, width: '100%', marginTop: '20px' }}>
           <DataGrid
             rows={events}
             columns={columns}
@@ -101,4 +119,3 @@ export default function App() {
     </ThemeProvider>
   );
 }
-
