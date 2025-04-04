@@ -1,3 +1,8 @@
+Доброе время суток случайный читатель!!!
+Это мой учебный проект, если будут какие-то замечания или вопросы, то спрашивайте.
+Тестирую работу дипсика, какие-то свои правки ввожу
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
